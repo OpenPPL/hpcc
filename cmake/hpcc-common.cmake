@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.13)
+
 if(__hpcc_common_INCLUDED)
     return()
 else()
@@ -25,10 +27,6 @@ if(HPCC_TARGET_ARCH)
 endif()
 
 set(CMAKE_OBJECT_PATH_MAX 4096)
-
-if(NOT CMAKE_DEBUG_POSTFIX)
-    set(CMAKE_DEBUG_POSTFIX d)
-endif()
 
 enable_language(C CXX ASM)
 
