@@ -14,19 +14,6 @@ set(CMAKE_OBJECT_PATH_MAX 4096)
 
 enable_language(C CXX ASM)
 
-if("${CMAKE_BUILD_TYPE}" STREQUAL "" OR CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNDEBUG -O3")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNDEBUG -O3")
-elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O3")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3")
-else()
-    message(FATAL_ERROR "unknown CMAKE_BUILD_TYPE [${CMAKE_BUILD_TYPE}]")
-endif()
-
 if(NOT ANDROID)
   if(CMAKE_SYSTEM_NAME STREQUAL "Android" OR HPCC_TARGET_OS STREQUAL "android")
     set(ANDROID TRUE)
@@ -192,7 +179,7 @@ macro(hpcc_declare_git_dep dep_name git_url git_tag)
     FetchContent_Declare(${dep_name}
         GIT_REPOSITORY ${git_url}
         GIT_TAG ${git_tag}
-        GIT_SHALLOW TRUE
+        #GIT_SHALLOW TRUE
         SOURCE_DIR ${HPCC_DEPS_DIR}/${dep_name}
         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/${dep_name}-build
         SUBBUILD_DIR ${HPCC_DEPS_DIR}/${dep_name}-subbuild
