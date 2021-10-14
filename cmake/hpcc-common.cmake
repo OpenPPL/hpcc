@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.14)
 
 if(__hpcc_common_INCLUDED)
     return()
@@ -13,12 +13,6 @@ endif()
 set(CMAKE_OBJECT_PATH_MAX 4096)
 
 enable_language(C CXX ASM)
-
-if(NOT ANDROID)
-  if(CMAKE_SYSTEM_NAME STREQUAL "Android" OR HPCC_TARGET_OS STREQUAL "android")
-    set(ANDROID TRUE)
-  endif()
-endif()
 
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
@@ -58,11 +52,6 @@ endmacro()
 macro(append_c_compiler_flag FLAG)
     append_compiler_flag(C ${FLAG} ${ARGV1})
 endmacro()
-function(append_linker_flag FLAG)
-  foreach(VARIANT EXE SHARED MODULE)
-    set(CMAKE_${VARIANT}_LINKER_FLAGS "${CMAKE_${VARIANT}_LINKER_FLAGS} ${FLAG}" PARENT_SCOPE)
-  endforeach(VARIANT EXE SHARED MODULE)
-endfunction()
 
 # compiler features for VC++
 # We use multi-thread static library, so use /MT instead of /MD
@@ -117,15 +106,6 @@ else()
     endif()
     append_cxx_compiler_flag("-ftemplate-depth=2014")
 endif()
-if(ANDROID)
-  foreach(lang C CXX ASM)
-    string(FIND "${CMAKE_${lang}_FLAGS}" "-fPIE" OUTPUT)
-    if(OUTPUT EQUAL "-1")
-      append_compiler_flag(${lang} "-fPIE")
-    endif()
-  endforeach(lang C CXX ASM)
-  append_linker_flag("-pie")
-endif(ANDROID)
 
 if(HPCC_USE_CUDA)
     find_package(CUDA REQUIRED)
@@ -183,11 +163,7 @@ macro(hpcc_declare_pkg_dep dep_name pkg_url pkg_md5)
 endmacro()
 
 macro(hpcc_populate_dep dep_name)
-    FetchContent_GetProperties(${dep_name})
-    if(NOT ${dep_name}_POPULATED)
-        FetchContent_Populate(${dep_name})
-        add_subdirectory(${${dep_name}_SOURCE_DIR} ${${dep_name}_BINARY_DIR})
-    endif()
+    FetchContent_MakeAvailable(${dep_name})
 endmacro()
 
 # --------------------------------------------------------------------------- #
