@@ -148,7 +148,7 @@ macro(hpcc_declare_git_dep dep_name git_url git_tag)
         #GIT_SHALLOW TRUE
         SOURCE_DIR ${HPCC_DEPS_DIR}/${dep_name}
         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/${dep_name}-build
-        SUBBUILD_DIR ${HPCC_DEPS_DIR}/${dep_name}-subbuild
+        SUBBUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/${dep_name}-subbuild
         UPDATE_DISCONNECTED True)
 endmacro()
 
@@ -158,7 +158,7 @@ macro(hpcc_declare_pkg_dep dep_name pkg_url pkg_md5)
         URL_HASH MD5=${pkg_md5}
         SOURCE_DIR ${HPCC_DEPS_DIR}/${dep_name}
         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/${dep_name}-build
-        SUBBUILD_DIR ${HPCC_DEPS_DIR}/${dep_name}-subbuild
+        SUBBUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/${dep_name}-subbuild
         UPDATE_DISCONNECTED True)
 endmacro()
 
