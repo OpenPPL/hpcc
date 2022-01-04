@@ -169,6 +169,7 @@ endmacro()
 find_package(Git QUIET)
 if(GIT_FOUND)
     # usage: hpcc_get_git_info(GIT_HASH_OUTPUT hash_value GIT_TAG_OUTPUT tag_value)
+    #        if current commit has a tag, `tag_value` is the tag string, otherwise `tag_value` is empty.
     function(hpcc_get_git_info)
         set(prefix "hpcc")
         set(flags)
@@ -208,6 +209,31 @@ if(GIT_FOUND)
             set(${hpcc_GIT_TAG_OUTPUT} "${git_tag_string}" PARENT_SCOPE)
         endif()
     endfunction()
+
+    # usage: hpcc_get_git_tag2version VER_MAJOR ver_major VER_MINOR ver_minor VER_PATCH ver_patch
+    #        converts tag string in the form of `v0.0.0` to version numbers
+    function(hpcc_get_git_tag2version)
+        set(prefix "hpcc")
+        set(flags)
+        set(single_values VER_MAJOR VER_MINOR VER_PATCH)
+        set(multi_values)
+        cmake_parse_arguments(${prefix} "${flags}" "${single_values}" "${multi_values}" ${ARGN})
+
+        # get tag string in the form of `v0.0.0`
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} describe --tags --abbrev=0
+            OUTPUT_VARIABLE git_tag_string
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET)
+        string(REPLACE "v" "" tmp ${git_tag_string}) # remove the leading `v`
+        string(REPLACE "." ";" version_list ${tmp}) # turn the version string to a list
+        list(GET version_list 0 ver_major_num)
+        set(${hpcc_VER_MAJOR} ${ver_major_num} PARENT_SCOPE)
+        list(GET version_list 1 ver_minor_num)
+        set(${hpcc_VER_MINOR} ${ver_minor_num} PARENT_SCOPE)
+        list(GET version_list 2 ver_patch_num)
+        set(${hpcc_VER_PATCH} ${ver_patch_num} PARENT_SCOPE)
+    endfunction()
 else()
     function(hpcc_get_git_info)
         set(prefix "hpcc")
@@ -218,5 +244,17 @@ else()
 
         set(${hpcc_GIT_HASH_OUTPUT} "" PARENT_SCOPE)
         set(${hpcc_GIT_TAG_OUTPUT} "" PARENT_SCOPE)
+    endfunction()
+
+    function(hpcc_get_git_tag2version)
+        set(prefix "hpcc")
+        set(flags)
+        set(single_values VER_MAJOR VER_MINOR VER_PATCH)
+        set(multi_values)
+        cmake_parse_arguments(${prefix} "${flags}" "${single_values}" "${multi_values}" ${ARGN})
+
+        set(${hpcc_VER_MAJOR} 0 PARENT_SCOPE)
+        set(${hpcc_VER_MINOR} 0 PARENT_SCOPE)
+        set(${hpcc_VER_PATCH} 0 PARENT_SCOPE)
     endfunction()
 endif()
