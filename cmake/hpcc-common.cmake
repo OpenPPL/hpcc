@@ -230,14 +230,21 @@ if(GIT_FOUND)
             OUTPUT_VARIABLE git_tag_string
             OUTPUT_STRIP_TRAILING_WHITESPACE
             ERROR_QUIET)
-        string(REPLACE "v" "" tmp ${git_tag_string}) # remove the leading `v`
-        string(REPLACE "." ";" version_list ${tmp}) # turn the version string to a list
-        list(GET version_list 0 ver_major_num)
-        set(${hpcc_VER_MAJOR} ${ver_major_num} PARENT_SCOPE)
-        list(GET version_list 1 ver_minor_num)
-        set(${hpcc_VER_MINOR} ${ver_minor_num} PARENT_SCOPE)
-        list(GET version_list 2 ver_patch_num)
-        set(${hpcc_VER_PATCH} ${ver_patch_num} PARENT_SCOPE)
+        string(LENGTH "${git_tag_string}" len_of_git_tag_string)
+        if(len_of_git_tag_string GREATER 0)
+            string(REPLACE "v" "" tmp ${git_tag_string}) # remove the leading `v`
+            string(REPLACE "." ";" version_list ${tmp}) # turn the version string to a list
+            list(GET version_list 0 ver_major_num)
+            set(${hpcc_VER_MAJOR} ${ver_major_num} PARENT_SCOPE)
+            list(GET version_list 1 ver_minor_num)
+            set(${hpcc_VER_MINOR} ${ver_minor_num} PARENT_SCOPE)
+            list(GET version_list 2 ver_patch_num)
+            set(${hpcc_VER_PATCH} ${ver_patch_num} PARENT_SCOPE)
+        else()
+            set(${hpcc_VER_MAJOR} 0 PARENT_SCOPE)
+            set(${hpcc_VER_MINOR} 0 PARENT_SCOPE)
+            set(${hpcc_VER_PATCH} 0 PARENT_SCOPE)
+        endif()
     endfunction()
 else()
     function(hpcc_get_git_info)
