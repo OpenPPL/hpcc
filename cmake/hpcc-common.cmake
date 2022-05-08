@@ -14,6 +14,8 @@ set(CMAKE_OBJECT_PATH_MAX 4096)
 
 enable_language(C CXX ASM)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON) # enable PIC
+
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 function(__hpcc_mangle_flags lang FLAG OUTPUT)
@@ -99,7 +101,6 @@ else()
     set(SSE_ENABLED_FLAGS "-msse -msse2 -msse3 -msse4.1")
     set(AVX512_ENABLED_FLAGS "-mavx512f")
     foreach(lang C CXX ASM)
-        __hpcc_append_compiler_flag(${lang} "-fPIC")
         __hpcc_append_compiler_flag(${lang} "-fvisibility=hidden")
         __hpcc_append_compiler_flag(${lang} "-Wall -Wno-array-bounds")
     endforeach()
