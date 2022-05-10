@@ -148,20 +148,20 @@ endif()
 
 # --------------------------------------------------------------------------- #
 
-macro(hpcc_declare_git_dep dep_name git_url git_tag)
+macro(hpcc_declare_git_dep dep_name git_url git_commit)
     FetchContent_Declare(${dep_name}
         GIT_REPOSITORY ${git_url}
-        GIT_TAG ${git_tag}
+        GIT_TAG ${git_commit} # only branch or tag can be used if shallow is enabled
         #GIT_SHALLOW TRUE
         SOURCE_DIR ${HPCC_DEPS_DIR}/${dep_name}
         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/${dep_name}-build
         SUBBUILD_DIR ${HPCC_DEPS_DIR}/${dep_name}-subbuild)
 endmacro()
 
-macro(hpcc_declare_pkg_dep dep_name pkg_url pkg_md5)
+macro(hpcc_declare_pkg_dep dep_name pkg_url)
     FetchContent_Declare(${dep_name}
         URL ${pkg_url}
-        URL_HASH MD5=${pkg_md5}
+        #URL_HASH MD5=${pkg_md5}
         SOURCE_DIR ${HPCC_DEPS_DIR}/${dep_name}
         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/${dep_name}-build
         SUBBUILD_DIR ${HPCC_DEPS_DIR}/${dep_name}-subbuild)
