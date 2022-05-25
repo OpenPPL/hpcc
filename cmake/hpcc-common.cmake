@@ -16,57 +16,15 @@ enable_language(C CXX ASM)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON) # enable PIC
 
-include(CheckCCompilerFlag)
-include(CheckCXXCompilerFlag)
-function(__hpcc_mangle_flags lang FLAG OUTPUT)
-    string(TOUPPER "HAVE_${lang}_FLAG_${FLAG}" SANITIZED_FLAG)
-    string(REPLACE "+" "X" SANITIZED_FLAG ${SANITIZED_FLAG})
-    string(REGEX REPLACE "[^A-Za-z_0-9]" "_" SANITIZED_FLAG ${SANITIZED_FLAG})
-    string(REGEX REPLACE "_+" "_" SANITIZED_FLAG ${SANITIZED_FLAG})
-    set(${OUTPUT} "${SANITIZED_FLAG}" PARENT_SCOPE)
-endfunction()
-function(__hpcc_append_compiler_flag lang FLAG)
-    __hpcc_mangle_flags(${lang} ${FLAG} MANGLED_FLAG)
-    set(OLD_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
-    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${FLAG}")
-    if (lang STREQUAL "CXX")
-        check_cxx_compiler_flag("${FLAG}" ${MANGLED_FLAG})
-    elseif(lang STREQUAL "C" OR lang STREQUAL "ASM")
-        check_c_compiler_flag("${FLAG}" ${MANGLED_FLAG})
-    else()
-        message(FATAL_ERROR "Unknown language: ${lang}")
-    endif()
-    set(CMAKE_REQUIRED_FLAGS "${OLD_CMAKE_REQUIRED_FLAGS}")
-    if(${MANGLED_FLAG})
-        set(VARIANT ${ARGV2})
-        if(ARGV2)
-            string(TOUPPER "_${VARIANT}" VARIANT)
-        endif()
-        set(CMAKE_${lang}_FLAGS${VARIANT} "${CMAKE_${lang}_FLAGS${VARIANT}} ${FLAG}" PARENT_SCOPE)
-    endif()
-endfunction()
-macro(__hpcc_append_cxx_compiler_flag FLAG)
-    __hpcc_append_compiler_flag(CXX ${FLAG} ${ARGV1})
-endmacro()
-macro(__hpcc_append_asm_compiler_flag FLAG)
-    __hpcc_append_compiler_flag(ASM ${FLAG} ${ARGV1})
-endmacro()
-macro(__hpcc_append_c_compiler_flag FLAG)
-    __hpcc_append_compiler_flag(C ${FLAG} ${ARGV1})
+macro(hpcc_append_cxx_compiler_flags flags)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flags}")
 endmacro()
 
-# compiler features for VC++
-# We use multi-thread static library, so use /MT instead of /MD
-#/arch:AVX2 use Advanced Vector Extensions2
-#/MP enable multi-processor compilation
-#/Gm enable minimal rebuild
-#/openmp enable openmp support
-#/Oi enable intrinsic functions
-#/Qpar enable parallel code generation
-#/GF enable string pooling
-#/Ot prefer speed to size
-#The other optimization options are set by CMake Visual Studio Generator.
-#Set compiler flags
+macro(hpcc_append_compiler_flags flags)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${flags}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flags}")
+endmacro()
+
 if(MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     foreach(lang C CXX)
@@ -74,41 +32,26 @@ if(MSVC)
         string(REPLACE /MD /MT CMAKE_${lang}_FLAGS_RELEASE "${CMAKE_${lang}_FLAGS_RELEASE}")
     endforeach()
 
-    __hpcc_append_c_compiler_flag("/MP")
-    __hpcc_append_c_compiler_flag("/openmp")
-    __hpcc_append_cxx_compiler_flag("/MP")
-    __hpcc_append_cxx_compiler_flag("/openmp")
-    __hpcc_append_cxx_compiler_flag("/wd4244")
-    __hpcc_append_cxx_compiler_flag("/wd4251")
-    __hpcc_append_cxx_compiler_flag("/wd4267")
-    __hpcc_append_cxx_compiler_flag("/wd4305")
-    __hpcc_append_cxx_compiler_flag("/wd4503")
-    __hpcc_append_cxx_compiler_flag("/wd4819")
-    __hpcc_append_cxx_compiler_flag("/wd4800")
-    __hpcc_append_cxx_compiler_flag("/wd4996")
-    __hpcc_append_cxx_compiler_flag("/wd4828")
-    __hpcc_append_cxx_compiler_flag("/utf-8")
+    hpcc_append_compiler_flags("/MP /openmp")
+    hpcc_append_compiler_flags("/wd4244 /wd4251 /wd4267 /wd4305 /wd4503 /wd4819 /wd4800 /wd4996 /wd4828")
+
     set(SSE_ENABLED_FLAGS "")
     set(FMA_ENABLED_FLAGS "/arch:AVX2")
     set(AVX_ENABLED_FLAGS "/arch:AVX")
     set(AVX512_ENABLED_FLAGS "/arch:AVX512")
 else()
+    hpcc_append_compiler_flags("-fvisibility=hidden")
+    hpcc_append_compiler_flags("-Wall -Wno-array-bounds -Werror=return-type")
+
+    hpcc_append_compiler_flags("-ffunction-sections -fdata-sections -fno-common -fno-strict-aliasing")
+    add_link_options("-Wl,--gc-sections")
+
+    hpcc_append_cxx_compiler_flags("-ftemplate-depth=2014")
+
     set(FMA_ENABLED_FLAGS "-mfma -mavx2")
     set(AVX_ENABLED_FLAGS "-mavx")
     set(SSE_ENABLED_FLAGS "-msse -msse2 -msse3 -msse4.1")
     set(AVX512_ENABLED_FLAGS "-mavx512f")
-    foreach(lang C CXX ASM)
-        __hpcc_append_compiler_flag(${lang} "-fvisibility=hidden")
-        __hpcc_append_compiler_flag(${lang} "-Wall -Wno-array-bounds")
-    endforeach()
-    if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-        set(__gnuc_options__ "-ffunction-sections -fdata-sections -fno-common -fno-strict-aliasing")
-        add_link_options("-Wl,--gc-sections")
-        __hpcc_append_compiler_flag(C ${__gnuc_options__})
-        __hpcc_append_compiler_flag(CXX ${__gnuc_options__})
-        unset(__gnuc_options__)
-    endif()
-    __hpcc_append_cxx_compiler_flag("-ftemplate-depth=2014")
 endif()
 
 # --------------------------------------------------------------------------- #
@@ -181,38 +124,6 @@ if(GIT_FOUND)
             set(${hpcc_GIT_TAG_OUTPUT} "${git_tag_string}" PARENT_SCOPE)
         endif()
     endfunction()
-
-    # usage: hpcc_get_git_tag2version VER_MAJOR ver_major VER_MINOR ver_minor VER_PATCH ver_patch
-    #        converts tag string in the form of `v0.0.0` to version numbers
-    function(hpcc_get_git_tag2version)
-        set(prefix "hpcc")
-        set(flags)
-        set(single_values VER_MAJOR VER_MINOR VER_PATCH)
-        set(multi_values)
-        cmake_parse_arguments(${prefix} "${flags}" "${single_values}" "${multi_values}" ${ARGN})
-
-        # get tag string in the form of `v0.0.0`
-        execute_process(
-            COMMAND ${GIT_EXECUTABLE} describe --tags --abbrev=0
-            OUTPUT_VARIABLE git_tag_string
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            ERROR_QUIET)
-        string(LENGTH "${git_tag_string}" len_of_git_tag_string)
-        if(len_of_git_tag_string GREATER 0)
-            string(REPLACE "v" "" tmp ${git_tag_string}) # remove the leading `v`
-            string(REPLACE "." ";" version_list ${tmp}) # turn the version string to a list
-            list(GET version_list 0 ver_major_num)
-            set(${hpcc_VER_MAJOR} ${ver_major_num} PARENT_SCOPE)
-            list(GET version_list 1 ver_minor_num)
-            set(${hpcc_VER_MINOR} ${ver_minor_num} PARENT_SCOPE)
-            list(GET version_list 2 ver_patch_num)
-            set(${hpcc_VER_PATCH} ${ver_patch_num} PARENT_SCOPE)
-        else()
-            set(${hpcc_VER_MAJOR} 0 PARENT_SCOPE)
-            set(${hpcc_VER_MINOR} 0 PARENT_SCOPE)
-            set(${hpcc_VER_PATCH} 0 PARENT_SCOPE)
-        endif()
-    endfunction()
 else()
     function(hpcc_get_git_info)
         set(prefix "hpcc")
@@ -223,17 +134,5 @@ else()
 
         set(${hpcc_GIT_HASH_OUTPUT} "" PARENT_SCOPE)
         set(${hpcc_GIT_TAG_OUTPUT} "" PARENT_SCOPE)
-    endfunction()
-
-    function(hpcc_get_git_tag2version)
-        set(prefix "hpcc")
-        set(flags)
-        set(single_values VER_MAJOR VER_MINOR VER_PATCH)
-        set(multi_values)
-        cmake_parse_arguments(${prefix} "${flags}" "${single_values}" "${multi_values}" ${ARGN})
-
-        set(${hpcc_VER_MAJOR} 0 PARENT_SCOPE)
-        set(${hpcc_VER_MINOR} 0 PARENT_SCOPE)
-        set(${hpcc_VER_PATCH} 0 PARENT_SCOPE)
     endfunction()
 endif()
