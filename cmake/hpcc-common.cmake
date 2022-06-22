@@ -26,12 +26,6 @@ macro(hpcc_append_compiler_flags flags)
 endmacro()
 
 if(MSVC)
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-    foreach(lang C CXX)
-        string(REPLACE /MD /MT CMAKE_${lang}_FLAGS_DEBUG "${CMAKE_${lang}_FLAGS_DEBUG}")
-        string(REPLACE /MD /MT CMAKE_${lang}_FLAGS_RELEASE "${CMAKE_${lang}_FLAGS_RELEASE}")
-    endforeach()
-
     hpcc_append_compiler_flags("/MP /openmp")
     hpcc_append_compiler_flags("/wd4244 /wd4251 /wd4267 /wd4305 /wd4503 /wd4819 /wd4800 /wd4996 /wd4828")
 

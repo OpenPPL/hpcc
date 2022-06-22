@@ -15,12 +15,6 @@ if(MSVC)
     endif()
     set(CUDA_NVCC_FLAGS_DEBUG "-g -O0")
     set(CUDA_NVCC_FLAGS_RELEASE "-O3")
-    #CMake with version greater than or equal to 3.15 use CMAKE_MSVC_RUNTIME_LIBRARY
-    #This variable is set above
-    if(NOT HPCC_MSVC_MD)
-        string(REPLACE -MD -MT CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG}")
-        string(REPLACE -MD -MT CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE}")
-    endif()
 else()
     set(CMAKE_CUDA_COMPILER ${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc)
     # Explicitly set the cuda host compiler.
