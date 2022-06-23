@@ -75,6 +75,27 @@ endmacro()
 
 # --------------------------------------------------------------------------- #
 
+# msvc utils
+
+macro(hpcc_use_msvc_dynamic_runtime)
+    # for cmake version >= 3.15
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+endmacro()
+
+macro(hpcc_use_msvc_static_runtime)
+    # for cmake version < 3.15
+    foreach(lang C CXX)
+        string(REPLACE /MD /MT CMAKE_${lang}_FLAGS_DEBUG "${CMAKE_${lang}_FLAGS_DEBUG}")
+        string(REPLACE /MD /MT CMAKE_${lang}_FLAGS_RELEASE "${CMAKE_${lang}_FLAGS_RELEASE}")
+    endforeach()
+    # for cmake version >= 3.15
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endmacro()
+
+# --------------------------------------------------------------------------- #
+
+# git utils
+
 find_package(Git QUIET)
 if(GIT_FOUND)
     # usage: hpcc_get_git_info(GIT_HASH_OUTPUT hash_value GIT_TAG_OUTPUT tag_value)

@@ -27,3 +27,8 @@ else()
 endif()
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} ${CUDA_NVCC_FLAGS}")
 set(CMAKE_CUDA_STANDARD 11)
+
+macro(hpcc_cuda_use_msvc_static_runtime)
+    string(REPLACE -MD -MT CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG}")
+    string(REPLACE -MD -MT CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE}")
+endmacro()
