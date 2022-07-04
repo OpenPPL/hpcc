@@ -16,11 +16,15 @@ endif()
 set(CUDA_PROPAGATE_HOST_FLAGS OFF)
 find_package(CUDA REQUIRED)
 
+# NOTE: `CMAKE_CUDA_COMPILER` and `CMAKE_CUDA_HOST_COMPILER` MUST be placed before enable_language(CUDA) for
+# recognizing arch and os
 if(MSVC)
     if(NOT CMAKE_CUDA_COMPILER)
         set(CMAKE_CUDA_COMPILER ${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc.exe)
     endif()
+    set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
     enable_language(CUDA)
+
     if(HAVE_CXX_FLAG_UTF_8)
         set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler=/utf-8")
     endif()
@@ -31,15 +35,13 @@ else()
     if(NOT CMAKE_CUDA_COMPILER)
         set(CMAKE_CUDA_COMPILER ${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc)
     endif()
+    set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
     enable_language(CUDA)
+
     set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler=-fPIC,-Wall,-fvisibility=hidden")
     set(CUDA_NVCC_FLAGS_DEBUG "-g")
     set(CUDA_NVCC_FLAGS_RELEASE "-O3")
 endif()
-
-# Explicitly set the cuda host compiler.
-# Because the default host compiler selected by cmake maybe wrong.
-set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
 
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} ${CUDA_NVCC_FLAGS}")
 
