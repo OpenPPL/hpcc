@@ -42,6 +42,9 @@ else()
 
     hpcc_append_cxx_compiler_flags("-ftemplate-depth=2014")
 
+    # forces to define a virtual destructor in a class when having virtual functions, though it is not necessary for all cases
+    hpcc_append_cxx_compiler_flags("-Werror=non-virtual-dtor")
+
     set(FMA_ENABLED_FLAGS "-mfma -mavx2")
     set(AVX_ENABLED_FLAGS "-mavx")
     set(SSE_ENABLED_FLAGS "-msse -msse2 -msse3 -msse4.1")
