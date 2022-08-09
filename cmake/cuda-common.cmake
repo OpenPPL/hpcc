@@ -43,6 +43,9 @@ else()
     set(CUDA_NVCC_FLAGS_RELEASE "-O3")
 endif()
 
+if(CUDA_VERSION VERSION_GREATER_EQUAL "10.2")
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -forward-unknown-to-host-compiler")
+endif()
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} ${CUDA_NVCC_FLAGS}")
 
 macro(hpcc_cuda_use_msvc_static_runtime)
