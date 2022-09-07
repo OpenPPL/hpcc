@@ -38,7 +38,11 @@ else()
     hpcc_append_compiler_flags("-Wall -Wno-array-bounds -Werror=return-type")
 
     hpcc_append_compiler_flags("-ffunction-sections -fdata-sections -fno-common -fno-strict-aliasing")
-    add_link_options("-Wl,--gc-sections")
+    if(APPLE)
+        add_link_options("-Wl,-dead_strip")
+    else()
+        add_link_options("-Wl,--gc-sections")
+    endif()
 
     hpcc_append_cxx_compiler_flags("-ftemplate-depth=2014")
 
