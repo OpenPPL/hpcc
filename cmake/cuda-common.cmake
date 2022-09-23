@@ -9,9 +9,6 @@ if(NOT DEFINED CMAKE_CUDA_STANDARD)
     set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 endif()
 
-set(CUDA_PROPAGATE_HOST_FLAGS OFF)
-find_package(CUDA REQUIRED) # required by CUDA_TOOLKIT_ROOT_DIR for cmake < 3.18
-
 # NOTE: cross compiling requires env `CUDA_TOOLKIT_ROOT`
 if(CUDA_TOOLKIT_ROOT_DIR AND NOT DEFINED ENV{CUDA_TOOLKIT_ROOT})
     set(ENV{CUDA_TOOLKIT_ROOT} ${CUDA_TOOLKIT_ROOT_DIR})
@@ -19,8 +16,12 @@ elseif(DEFINED ENV{CUDA_TOOLKIT_ROOT} AND NOT CUDA_TOOLKIT_ROOT_DIR)
     set(CUDA_TOOLKIT_ROOT_DIR $ENV{CUDA_TOOLKIT_ROOT})
 endif()
 
-# NOTE: `CMAKE_CUDA_COMPILER` and `CMAKE_CUDA_HOST_COMPILER` MUST be placed before enable_language(CUDA) for
-# recognizing arch and os
+# NOTE: find_package should be placed after env settings for cross compiling
+set(CUDA_PROPAGATE_HOST_FLAGS OFF)
+find_package(CUDA REQUIRED) # required by CUDA_TOOLKIT_ROOT_DIR for cmake < 3.18
+
+# NOTE: `CMAKE_CUDA_COMPILER` and `CMAKE_CUDA_HOST_COMPILER` MUST be placed before enable_language(CUDA)
+# in order to recognize arch and os
 if(MSVC)
     if(NOT CMAKE_CUDA_COMPILER)
         set(CMAKE_CUDA_COMPILER ${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc.exe)
