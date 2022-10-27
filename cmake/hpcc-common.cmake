@@ -55,6 +55,14 @@ else()
     set(AVX512_ENABLED_FLAGS "-mavx512f")
 endif()
 
+if(MSVC)
+    set(HPCC_STATIC_LIB_PREFIX "")
+    set(HPCC_STATIC_LIB_SUFFIX ".lib")
+else()
+    set(HPCC_STATIC_LIB_PREFIX "lib")
+    set(HPCC_STATIC_LIB_SUFFIX ".a")
+endif()
+
 # --------------------------------------------------------------------------- #
 
 macro(hpcc_declare_git_dep dep_name git_url git_commit)
