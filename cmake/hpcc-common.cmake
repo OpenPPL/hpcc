@@ -14,6 +14,10 @@ set(CMAKE_OBJECT_PATH_MAX 4096)
 
 enable_language(C CXX ASM)
 
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 11)
+endif()
+
 set(CMAKE_POSITION_INDEPENDENT_CODE ON) # enable PIC
 
 macro(hpcc_append_cxx_compiler_flags flags)
