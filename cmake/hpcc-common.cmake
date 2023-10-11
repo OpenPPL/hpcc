@@ -72,8 +72,19 @@ endif()
 macro(hpcc_declare_git_dep dep_name git_url git_commit)
     FetchContent_Declare(${dep_name}
         GIT_REPOSITORY ${git_url}
-        GIT_TAG ${git_commit} # only branch or tag can be used if shallow is enabled
+        GIT_TAG ${git_commit}
         #GIT_SHALLOW TRUE
+        SOURCE_DIR ${HPCC_DEPS_DIR}/${dep_name}
+        BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/${dep_name}-build
+        SUBBUILD_DIR ${HPCC_DEPS_DIR}/${dep_name}-subbuild)
+endmacro()
+
+# only branch or tag can be used if shallow is enabled, cloning with option '--depth 1'
+macro(hpcc_declare_git_dep_depth1 dep_name git_url git_branch_or_tag)
+    FetchContent_Declare(${dep_name}
+        GIT_REPOSITORY ${git_url}
+        GIT_TAG ${git_branch_or_tag}
+        GIT_SHALLOW TRUE
         SOURCE_DIR ${HPCC_DEPS_DIR}/${dep_name}
         BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/${dep_name}-build
         SUBBUILD_DIR ${HPCC_DEPS_DIR}/${dep_name}-subbuild)
