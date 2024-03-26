@@ -69,6 +69,23 @@ endif()
 
 # --------------------------------------------------------------------------- #
 
+# asan support. use `addr2line -e <bin> <offset> -f -a -p -C` to parse call stack items.
+if(HPCC_ENABLE_SANITIZE_OPTIONS)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        set(__ASAN_FLAGS__ "-fsanitize=address -fsanitize=leak -fno-omit-frame-pointer")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${__ASAN_FLAGS__}")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${__ASAN_FLAGS__}")
+        unset(__ASAN_FLAGS__)
+        if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+            add_link_options("-static-libasan")
+        endif()
+    else()
+        message(FATAL_ERROR "UNSUPPORTED: `HPCC_ENABLE_SANITIZE_OPTIONS` is ON when using compiler `${CMAKE_CXX_COMPILER_ID}`.")
+    endif()
+endif()
+
+# --------------------------------------------------------------------------- #
+
 macro(hpcc_declare_git_dep dep_name git_url git_commit)
     FetchContent_Declare(${dep_name}
         GIT_REPOSITORY ${git_url}
