@@ -41,10 +41,10 @@ else()
     hpcc_append_compiler_flags("-fvisibility=hidden")
     hpcc_append_compiler_flags("-Wall -Wno-array-bounds -Werror=return-type")
 
-    hpcc_append_compiler_flags("-ffunction-sections -fdata-sections -fno-common -fno-strict-aliasing")
     if(APPLE)
         add_link_options("-Wl,-dead_strip")
     else()
+        hpcc_append_compiler_flags("-ffunction-sections -fdata-sections -fno-common -fno-strict-aliasing")
         add_link_options("-Wl,--gc-sections")
     endif()
 
